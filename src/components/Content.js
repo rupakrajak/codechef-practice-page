@@ -20,22 +20,10 @@ class Content extends Component {
     };
 
     componentDidMount() {
-        // console.log(process.env.REACT_APP_sample);
         eventBus.on("searched", (data) =>
             this.onClickButtonShow(data.message, 0)
         );
         onMountCheckUrl();
-        // console.log(window.location);
-        // let URL = 'https://api.codechef.com/tags/problems';
-        // let params = {
-        //     limit: 100,
-        // };
-        // let config = {
-        //     headers: {
-        //         Accept: 'application/json'
-
-        //     }
-        // }
         // axios.get('https://cors-anywhere.herokuapp.com/https://www.codechef.com/get/tags/problems')
         axios
             .get(
@@ -181,12 +169,6 @@ class Content extends Component {
             } 
         }
     };
-
-    // async resolveUnauthorized(name, count) {
-    //     refreshToken().then((res) => {
-    //         this.onClickButtonShow(name, count);
-    //     });
-    // }
 
     decideGridColor = (item) => {
         if (item.tag_type == "author") {
