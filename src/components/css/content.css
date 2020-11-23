@@ -30,7 +30,7 @@
     background-color: goldenrod;
     color: rgb(39, 39, 39);
     padding: 8px 10px;
-    margin: 8px;
+    margin: 14px 14px;
     border-radius: 5px;
 }
 
@@ -221,4 +221,25 @@
     width: max-content;
     font-size: 18px;
     color: white;
+}
+
+.buttonbar {
+    display: flex;
+    justify-content: space-between;
+}
+
+.leftbuttons {
+    margin-left: 14px;
+}
+
+.rightbuttons {
+    margin-right: 14px;
+}
+
+#authordot {
+    color: #ffaf6e;
+}
+
+#tagdot {
+    color: #ffd86e;
 }

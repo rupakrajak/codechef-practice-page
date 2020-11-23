@@ -15,6 +15,11 @@ class Content extends Component {
 
         this.tagList = {};
         this.state = {
+            allButton: 1,
+            authorButton: 0,
+            tagButton: 0,
+            tagNameButton: 1,
+            problemCountButton: 0, 
             tagName: "",
             hasData: 0,
             dataList: [],
@@ -25,6 +30,11 @@ class Content extends Component {
         this.desDataOnCount = [];
         this.ascDataOnName = [];
         this.desDataOnName = [];
+        this.sortIcon = {
+            0: "",
+            1: "up",
+            2: "down",
+        }
     }
 
     componentDidMount() {
@@ -39,17 +49,16 @@ class Content extends Component {
             )
             .then((res) => {
                 console.log(res);
-                this.norData = res.data.slice();
                 this.ascDataOnCount = res.data.slice();
                 this.desDataOnCount = res.data.slice();
                 this.ascDataOnName = res.data.slice();
                 this.desDataOnName = res.data.slice();
                 this.ascDataOnCount.sort((a, b) => {
                     return a.count - b.count;
-                })
+                });
                 this.desDataOnCount.sort((a, b) => {
                     return b.count - a.count;
-                })
+                });
                 this.ascDataOnName.sort((a, b) => {
                     let fa = a.tag.toLowerCase(),
                         fb = b.tag.toLowerCase();
@@ -78,7 +87,7 @@ class Content extends Component {
                 console.log(this.desDataOnName);
                 this.setState({
                     hasData: 1,
-                    dataList: this.norData,
+                    dataList: this.ascDataOnName,
                 });
             });
     }
@@ -254,6 +263,24 @@ class Content extends Component {
         ];
     };
 
+    authorsOnly = () => {
+        return [
+            this.state.dataList.map((item) => {
+                if (item.tag_type == 'author')
+                    return this.renderGridItem(item);
+            }),
+        ];
+    };
+
+    tagsOnly = () => {
+        return [
+            this.state.dataList.map((item) => {
+                if (item.tag_type == 'actual_tag')
+                    return this.renderGridItem(item);
+            }),
+        ];
+    };
+
     backAction = () => {
         this.setState({
             hasData: 0,
@@ -290,6 +317,122 @@ class Content extends Component {
         ];
     };
 
+    triggerAll = () => {
+        this.setState({
+            allButton: 1,
+            authorButton: 0,
+            tagButton: 0,
+        })
+    }
+
+    triggerAuthors = () => {
+        this.setState({
+            allButton: 0,
+            authorButton: 1,
+            tagButton: 0,
+        })
+    }
+
+    triggerTags = () => {
+        this.setState({
+            allButton: 0,
+            authorButton: 0,
+            tagButton: 1,
+        })
+    }
+
+    triggerTagName = () => {
+        let next = 0;
+        if (this.state.tagNameButton == 0) next = 1;
+        else {
+            next = (this.state.tagNameButton == 1) ? 2 : 1;
+        }
+        if (next == 1) {
+            this.setState({
+                tagNameButton: next,
+                problemCountButton: 0,
+                dataList: this.ascDataOnName,
+            })
+        } else {
+            this.setState({
+                tagNameButton: next,
+                problemCountButton: 0,
+                dataList: this.desDataOnName,
+            })
+        }
+    }
+
+    triggerProblemCount = () => {
+        let next = 0;
+        if (this.state.problemCountButton == 0) next = 1;
+        else {
+            next = (this.state.problemCountButton == 1) ? 2 : 1;
+        }
+        if (next == 1) {
+            this.setState({
+                problemCountButton: next,
+                tagNameButton: 0,
+                dataList: this.ascDataOnCount,
+            })
+        } else {
+            this.setState({
+                problemCountButton: next,
+                tagNameButton: 0,
+                dataList: this.desDataOnCount,
+            })
+        }
+    }
+
+    tagNameBtnIconSelector = () => {
+        return this.sortIcon[this.state.tagNameButton];
+    }
+
+    probCntBtnIconSelector = () => {
+        return this.sortIcon[this.state.problemCountButton];
+    }
+
+    showButtons = () => {
+        return [
+            <div className="buttonbar">
+                <div className="leftbuttons">
+                    <div className="ui labeled icon buttons">
+                        <button className="ui button" onClick={ this.triggerAll }>
+                            <i className="circle outline icon"></i>
+                            ALL
+                        </button>
+                        <button className="ui button" onClick={ this.triggerAuthors }>
+                            <i id="authordot" className="circle icon"></i>
+                            AUTHORS
+                        </button>
+                        <button className="ui button" onClick={ this.triggerTags }>
+                            <i id="tagdot" className="circle icon"></i>
+                            TAGS
+                        </button>
+                    </div>
+                </div>
+                ,
+                <div className="rightbuttons">
+                    <div className="ui labeled icon buttons">
+                        <button className="ui button" onClick={ this.triggerTagName }>
+                            <i className={"sort " + this.tagNameBtnIconSelector() + " icon"}></i>
+                            TAG NAME
+                        </button>
+                        <button className="ui button" onClick={ this.triggerProblemCount }>
+                            <i className={"sort " + this.probCntBtnIconSelector() + " icon"}></i>
+                            PROBLEM COUNT
+                        </button>
+                    </div>
+                </div>
+            </div>,
+        ];
+    };
+
+    decideDisplayFunction = () => {
+        if (this.state.allButton == 1) return this.initialContent;
+        if (this.state.authorButton == 1) return this.authorsOnly;
+        if (this.state.tagButton == 1) return this.tagsOnly;
+    }
+
     render() {
         if (this.state.hasData == 0) {
             return (
@@ -302,8 +445,9 @@ class Content extends Component {
         } else if (this.state.hasData == 1) {
             return (
                 <div className="initialContent">
-                    <h1 id='heading'>Tag categories:</h1>
-                    <div className="ui grid">{this.initialContent()}</div>
+                    <h1 id="heading">Tag categories:</h1>
+                    {this.showButtons()}
+                    <div className="ui grid">{this.decideDisplayFunction()()}</div>
                 </div>
             );
         } else if (this.state.hasData == 2) {
