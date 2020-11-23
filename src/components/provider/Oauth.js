@@ -1,5 +1,5 @@
 import axios from "axios";
-import eventBus from "./../EventBus"
+import eventBus from "./../EventBus";
 
 const grantTypes = ["authorization_code", "client_credentials"];
 
@@ -82,7 +82,7 @@ const refreshToken = async () => {
 
 const getClientID = () => {
     return oauthData.CLIENT_ID;
-}
+};
 
 const getAccessToken = () => {
     return sessionData.ACCESS_TOKEN;
@@ -96,52 +96,14 @@ const authorize = () => {
     window.location = `${oauthData.api_authorize_endpoint}?response_type=${oauthData.response_type}&client_id=${oauthData.CLIENT_ID}&state=${oauthData.state}&redirect_uri=${oauthData.redirect_uri}`;
 };
 
-const unauthorize = async() => {
+const unauthorize = async () => {
     sessionData.authorized = false;
     sessionData.grant_type = grantTypes[1];
     let stat = await refreshToken();
-    if (stat == 'success') {
+    if (stat == "success") {
         eventBus.dispatch("authorisedChanged", { message: true });
     }
-}
-
-// const completeAuthorization = () => {
-//     // auth_window.close();
-//     console.log(return_url);
-// };
-
-// let return_url, auth_window;
-
-// const authorize = () => {
-//     console.log(oauthData.api_authorize_endpoint);
-//     const auth_url = `${oauthData.api_authorize_endpoint}?response_type=${oauthData.response_type}&client_id=${oauthData.CLIENT_ID}&state=${oauthData.state}&redirect_uri=${oauthData.redirect_uri}`;
-//     // const config = {
-//     //     params: {
-//     //         response_type: this.oauthData.response_type,
-//     //         client_id: this.oauthData.CLIENT_ID,
-//     //         state: this.oauthData.state,
-//     //         redirect_uri: this.oauthData.redirect_uri,
-//     //     }
-//     // }
-//     auth_window = window.open(
-//         auth_url,
-//         "CodeChef | Login",
-//         "width=1140, height=640"
-//     );
-//     auth_window.focus();
-//     // auth_window.onbeforeunload = () => {
-//     //     console.log("Hello");
-//     //     return_url = auth_window.location;
-//     //     completeAuthorization();
-//     //     auth_window.close();
-//     // };
-//     auth_window.onbeforeunload = () => {
-//         console.log("Hello");
-//         return_url = auth_window.location.href;
-//         completeAuthorization();
-//         // auth_window.close();
-//     };
-// };
+};
 
 const onMountCheckUrl = async () => {
     const queryString = window.location.search;

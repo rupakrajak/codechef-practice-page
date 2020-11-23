@@ -26,6 +26,14 @@
     /* overflow: hidden; */
 }
 
+#heading {
+    background-color: goldenrod;
+    color: rgb(39, 39, 39);
+    padding: 8px 10px;
+    margin: 8px;
+    border-radius: 5px;
+}
+
 .gridContent {
     border-radius: 10px;
     height: 38px;

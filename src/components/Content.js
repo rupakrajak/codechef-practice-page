@@ -2,21 +2,30 @@ import React, { Component } from "react";
 import axios from "axios";
 import "./css/content.css";
 import eventBus from "./EventBus";
-import { getClientID, getAccessToken, refreshToken, onMountCheckUrl } from "./provider/Oauth";
+import {
+    getClientID,
+    getAccessToken,
+    refreshToken,
+    onMountCheckUrl,
+} from "./provider/Oauth";
 
 class Content extends Component {
     constructor() {
         super();
+
+        this.tagList = {};
+        this.state = {
+            tagName: "",
+            hasData: 0,
+            dataList: [],
+            problems: [],
+        };
+        this.norData = [];
+        this.ascDataOnCount = [];
+        this.desDataOnCount = [];
+        this.ascDataOnName = [];
+        this.desDataOnName = [];
     }
-
-    tagList = {};
-
-    state = {
-        tagName: "",
-        hasData: 0,
-        dataList: [],
-        problems: [],
-    };
 
     componentDidMount() {
         eventBus.on("searched", (data) =>
@@ -30,9 +39,46 @@ class Content extends Component {
             )
             .then((res) => {
                 console.log(res);
+                this.norData = res.data.slice();
+                this.ascDataOnCount = res.data.slice();
+                this.desDataOnCount = res.data.slice();
+                this.ascDataOnName = res.data.slice();
+                this.desDataOnName = res.data.slice();
+                this.ascDataOnCount.sort((a, b) => {
+                    return a.count - b.count;
+                })
+                this.desDataOnCount.sort((a, b) => {
+                    return b.count - a.count;
+                })
+                this.ascDataOnName.sort((a, b) => {
+                    let fa = a.tag.toLowerCase(),
+                        fb = b.tag.toLowerCase();
+                    if (fa < fb) {
+                        return -1;
+                    }
+                    if (fa > fb) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                this.desDataOnName.sort((a, b) => {
+                    let fa = a.tag.toLowerCase(),
+                        fb = b.tag.toLowerCase();
+                    if (fa > fb) {
+                        return -1;
+                    }
+                    if (fa < fb) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                console.log(this.ascDataOnCount);
+                console.log(this.desDataOnCount);
+                console.log(this.ascDataOnName);
+                console.log(this.desDataOnName);
                 this.setState({
                     hasData: 1,
-                    dataList: res.data,
+                    dataList: this.norData,
                 });
             });
     }
@@ -126,7 +172,7 @@ class Content extends Component {
         ];
     };
 
-    onClickButtonShow = async(name, count) => {
+    onClickButtonShow = async (name, count) => {
         let isUnauthorised = false;
         this.setState({
             hasData: 0,
@@ -156,15 +202,15 @@ class Content extends Component {
             }
         } catch (error) {
             console.log(error);
-            console.log('hello');
+            console.log("hello");
             isUnauthorised = true;
         }
         if (isUnauthorised) {
             let stat = await refreshToken();
-            if (stat == 'success') {
+            if (stat == "success") {
                 isUnauthorised = false;
-                this.onClickButtonShow(name, count);  
-            } 
+                this.onClickButtonShow(name, count);
+            }
         }
     };
 
@@ -256,7 +302,7 @@ class Content extends Component {
         } else if (this.state.hasData == 1) {
             return (
                 <div className="initialContent">
-                    <h1>Tag categories:</h1>
+                    <h1 id='heading'>Tag categories:</h1>
                     <div className="ui grid">{this.initialContent()}</div>
                 </div>
             );
