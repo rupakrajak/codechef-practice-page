@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import axios from "axios";
 import "./css/content.css";
-import configData from "./config.json";
 import eventBus from "./EventBus";
-import { getAccessToken, refreshToken, onMountCheckUrl } from "./provider/Oauth";
+import { getClientID, getAccessToken, refreshToken, onMountCheckUrl } from "./provider/Oauth";
 
 class Content extends Component {
     constructor() {
@@ -132,7 +131,6 @@ class Content extends Component {
         this.setState({
             hasData: 0,
         });
-        console.log(configData.Client_ID);
         let URL = "https://api.codechef.com/tags/problems";
         let config = {
             headers: {

@@ -80,6 +80,10 @@ const refreshToken = async () => {
     }
 };
 
+const getClientID = () => {
+    return oauthData.CLIENT_ID;
+}
+
 const getAccessToken = () => {
     return sessionData.ACCESS_TOKEN;
 };
@@ -155,6 +159,7 @@ const onMountCheckUrl = async () => {
 };
 
 export {
+    getClientID,
     refreshToken,
     getAccessToken,
     isAuthorized,
