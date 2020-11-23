@@ -1,0 +1,216 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.ui.segment {
+    border: none;
+}
+
+.ui.active.inverted.dimmer {
+    height: 100vh;
+}
+
+.ui.grid {
+    margin: auto;
+}
+
+.initialContent h1 {
+    padding: 14px 0 0 14px;
+}
+
+.four.wide.column {
+    /* border: solid 10px white; */
+    /* padding: auto; */
+    /* color: white; */
+    /* overflow: hidden; */
+}
+
+.gridContent {
+    border-radius: 10px;
+    height: 38px;
+    background-color: rgb(228, 228, 228);
+}
+
+.gridContent:hover {
+    cursor: pointer;
+}
+
+.name {
+    position: relative;
+    display: inline;
+    top: 7px;
+}
+
+.aname {
+    position: relative;
+    display: inline;
+    top: 7px;
+}
+
+.count {
+    position: relative;
+    display: inline-block;
+    top: 7px;
+}
+
+.name h1 {
+    height: 38px;
+    border-radius: 10px;
+    display: inline;
+    padding: 7px;
+    margin: 0 2px 0 0;
+    font-size: 18px;
+    background-color: #ffd86e;
+    color: black;
+    border: solid 2px black;
+}
+
+.aname h1 {
+    /* position: absolute; */
+    height: 38px;
+    border-radius: 10px;
+    display: inline;
+    padding: 7px;
+    margin: 0 2px 0 0;
+    font-size: 18px;
+    background-color: #ffaf6e;
+    color: black;
+    border: solid 2px black;
+}
+
+.count h2 {
+    border-radius: 10px;
+    height: 38px;
+    display: inline;
+    padding: 7px;
+    margin: auto;
+    font-size: 18px;
+    background-color: #cacaca;
+    color: black;
+    border: solid 2px black;
+}
+
+.resultsbg {
+    max-width: 1250px;
+    background-color: rgb(231, 231, 231);
+    margin: 35px auto 15px auto;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.ui.animated.button {
+    background-color: rgb(255, 255, 255);
+    height: 53px;
+    width: 130px;
+    font-size: 20px;
+}
+
+.problemCard {
+    border-radius: 20px;
+    background-color: white;
+    margin: 20px 0 0 0;
+    border: solid 1px black;
+}
+
+.title {
+    border-radius: 20px 20px 0 0;
+    background-color: #ffd86e;
+    padding: 10px 20px;
+}
+
+.title h1 {
+    color: white;
+    border-radius: 30px;
+    border: solid 2px;
+    background-color: #509cff;
+    width: max-content;
+    padding: 10px 20px;
+    height: 60px;
+    font-size: 30px;
+    text-align: center;
+}
+
+.details {
+    background-color: white;
+    padding: 10px 20px;
+    border-radius: 0 0 20px 20px;
+}
+
+.author,
+.submissions,
+.accuracy {
+    background-color: rgb(243, 243, 243);
+    margin: 10px 0 10px 0;
+    border-radius: 10px;
+}
+
+.tags {
+    background-color: white;
+    padding: 10px 20px;
+    border: solid 1px black;
+    border-radius: 20px;
+    margin: -1px 0 20px 0;
+}
+
+.criteria {
+    background-color: white;
+    padding: 10px 20px;
+    height: 50px;
+    display: inline-flex;
+    border-radius: 25px 0 0 25px;
+    border-right: solid 1px;
+    margin: 10px 0 10px 10px;
+    width: 170px;
+    align-content: center;
+}
+
+.criteria h1 {
+    font-size: 23px;
+}
+
+.cvalue {
+    background-color: #ffa36e;
+    padding: 10px 20px;
+    height: 50px;
+    display: inline-flex;
+    border-radius: 0 25px 25px 0;
+    border-left: solid 1px;
+    margin: 10px 10px 10px 0;
+}
+
+.cvalue h1 {
+    font-size: 23px;
+    color: white;
+}
+
+.spTag {
+    background-color: #52d363;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    margin: 5px;
+    border-radius: 22px;
+    padding: 10px 15px;
+    height: 41px;
+}
+
+.tag {
+    background-color: coral;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    margin: 5px;
+    border-radius: 22px;
+    padding: 10px 15px;
+    height: 41px;
+}
+.spTag,
+.tag:hover {
+    cursor: pointer;
+}
+
+.spTag h1,
+.tag h1 {
+    width: max-content;
+    font-size: 18px;
+    color: white;
+}

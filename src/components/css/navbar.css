@@ -1,0 +1,148 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.ui.primary.button {
+    margin: auto;
+}
+
+.ui.button {
+    margin: auto;
+}
+
+#upper-panel {
+    height: 70px;
+    width: max-width;
+    background-color: #59360e;
+    box-shadow: 0 0 10px 0;
+}
+
+#lower-panel {
+    top: 70px;
+    height: 70px;
+    width: max-width;
+    box-shadow: 0 0 5px 0;
+}
+
+#codecheflogo {
+    float: left;
+}
+
+#codecheflogo img {
+    margin: 12px 12px 12px 24px;
+    width: 200px;
+    position: relative;
+    top: 15px;
+}
+
+#codecheflogo h1 {
+    display: inline;
+    height: 50px;
+    font-family: "Pangolin", cursive;
+    font-size: 20px;
+    color: #59360e;
+}
+
+#sign {
+    position: relative;
+    float: right;
+    margin: 17px 12px;
+    display: inline;
+}
+
+#username {
+    display: inline;
+}
+
+#username h1 {
+    font-size: 14px;
+    display: inline;
+    color: white;
+    padding: 0 5px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.uname {
+    display: inline;
+    padding-right: 8px;
+}
+
+#searchbar {
+    height: 32px;
+    position: relative;
+    float: right;
+    margin: 14px;
+    margin-top: 20px;
+    border-radius: 16px;
+}
+
+#searchinput {
+    position: relative;
+    display: inline;
+    margin: 0 3px 0 0;
+    height: 28px;
+    width: 250px;
+    padding: 7px;
+    border: solid 2px black;
+    border-radius: 14px;
+}
+
+#searchbutton {
+    position: relative;
+    margin: auto;
+    height: 28px;
+    width: 70px;
+    background-color: grey;
+    color: white;
+    border: none;
+    border-radius: 14px;
+}
+
+#searchinput:focus,
+#searchbutton:focus {
+    outline: none;
+}
+
+#searchbutton:hover {
+    cursor: pointer;
+}
+
+#searchbutton:hover {
+    background-color: rgb(85, 85, 85);
+}
+
+.b1 {
+    display: inline;
+    background-color:#666666;   
+}
+.b2 {
+    display: inline;
+    background-color:#1e7d22;   
+}
+.b3 {
+    display: inline;
+    background-color:#3366cc;   
+}
+.b4 {
+    display: inline;
+    background-color:#684273;   
+}
+.b5 {
+    display: inline;
+    background-color:#ffbf00;   
+}
+.b6 {
+    display: inline;
+    background-color:#ff7f00;   
+}
+.b7 {
+    display: inline;
+    background-color:#d0011b;   
+}
+
+.b1 h1, .b2 h1, .b3 h1, .b4 h1, .b5 h1, .b6 h1, .b7 h1 {
+    color: white;
+    font-size: 12px;
+}
