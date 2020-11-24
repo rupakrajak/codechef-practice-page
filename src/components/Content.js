@@ -128,7 +128,7 @@ class Content extends Component {
     };
 
     renderProblems = (item) => {
-        const accuracy = (item.solved / item.attempted).toFixed(2);
+        const accuracy = ((item.solved / item.attempted) * 100).toFixed(2) + "%";
         return (
             <div>
                 <div className="problemCard">
