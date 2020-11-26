@@ -13,12 +13,7 @@ import eventBus from "./EventBus";
 class Navbar extends Component {
     constructor() {
         super();
-        // this.value = "";
-        this.inputRef = React.createRef();
-        this.tagsAvail = false;
-        this.tagList = [];
-        this.tags = new Set();
-        this.invalidTags = false;
+
         this.state = {
             signedIn: false,
             username: "",
@@ -28,6 +23,11 @@ class Navbar extends Component {
             suggestions: [],
             cursor: -1,
         };
+        this.inputRef = React.createRef();
+        this.tagsAvail = false;
+        this.tagList = [];
+        this.tags = new Set();
+        this.invalidTags = false;
     }
 
     componentDidMount = () => {

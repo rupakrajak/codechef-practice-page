@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import "./css/content.css";
 import eventBus from "./EventBus";
-import sorry from "./images/sorry.png"
+import sorry from "./images/sorry.png";
 import {
     getClientID,
     getAccessToken,
@@ -10,9 +10,9 @@ import {
     onMountCheckUrl,
 } from "./provider/Oauth";
 
-String.prototype.toSentenceCase= function() {
-    return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
-}
+String.prototype.toSentenceCase = function () {
+    return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
+};
 
 class Content extends Component {
     constructor() {
@@ -30,6 +30,7 @@ class Content extends Component {
             dataList: [],
             problems: [],
         };
+        this.offset = 0;
         this.tagList = {};
         this.queryDict = new Set();
         this.queryString = "";
@@ -47,7 +48,7 @@ class Content extends Component {
 
     componentDidMount() {
         eventBus.on("searched", (data) => {
-            this.onClickButtonShow(data.message, 0)
+            this.onClickButtonShow(data.message, 0);
             // console.log(data.message)
             // console.log(this.queryDict);
         });
@@ -140,7 +141,8 @@ class Content extends Component {
     };
 
     renderProblems = (item) => {
-        const accuracy = ((item.solved / item.attempted) * 100).toFixed(2) + "%";
+        const accuracy =
+            ((item.solved / item.attempted) * 100).toFixed(2) + "%";
         return (
             <div>
                 <div className="problemCard">
@@ -196,32 +198,24 @@ class Content extends Component {
             return (
                 <div className="error">
                     <div className="errorimg">
-                        <img src={sorry} alt="Sorry" width="100" height="100"></img>
+                        <img
+                            src={sorry}
+                            alt="Sorry"
+                            width="100"
+                            height="100"
+                        ></img>
                     </div>
                     <h1>{this.state.serverResponseMessage.toSentenceCase()}</h1>
                 </div>
-            )
+            );
         }
     };
 
-    onClickButtonShow = async (name, count) => {
+    fetchResultsAndDisplay = async () => {
         let isUnauthorised = false;
         this.setState({
             hasData: 0,
         });
-        let _queryString = name.trim().slice();
-        if (_queryString[_queryString.length - 1] == ',') _queryString = _queryString.slice(0, _queryString.length - 1);
-        let querys = _queryString.split(",");
-        let _queryDict = new Set();
-        _queryString = "";
-        for (let i = 0; i < querys.length; i++) {
-            _queryDict.add(querys[i].trim())
-            _queryString += (querys[i].trim() + ",");
-        }
-        this.queryDict = _queryDict;
-        this.queryString = _queryString.slice(0, _queryString.length - 1);
-        console.log(this.queryDict);
-        console.log(this.queryString);
         let URL = "https://api.codechef.com/tags/problems";
         let config = {
             headers: {
@@ -231,6 +225,7 @@ class Content extends Component {
             params: {
                 filter: this.queryString,
                 limit: 100,
+                offset: this.offset,
             },
         };
         try {
@@ -243,16 +238,18 @@ class Content extends Component {
                         hasData: 2,
                         problems: response.data.result.data.content,
                         serverResponseCode: response.data.result.data.code,
-                        serverResponseMessage: response.data.result.data.message,
+                        serverResponseMessage:
+                                response.data.result.data.message,
                     });
                 } else {
                     this.setState({
                         hasData: 2,
                         serverResponseCode: response.data.result.errors.code,
-                        serverResponseMessage: response.data.result.errors.message,
+                        serverResponseMessage:
+                        response.data.result.errors.message,
                     });
                 }
-                console.log(this.state.problems);
+                // console.log(Object.keys(this.state.problems).length + " Problem Count");
             }
         } catch (error) {
             console.log(error);
@@ -263,10 +260,29 @@ class Content extends Component {
             let stat = await refreshToken();
             if (stat == "success") {
                 isUnauthorised = false;
-                this.onClickButtonShow(name, count);
+                this.fetchResultsAndDisplay();
             }
         }
     };
+
+    onClickButtonShow = (name, count) => {
+        let _queryString = name.trim().slice();
+        if (_queryString[_queryString.length - 1] == ",")
+        _queryString = _queryString.slice(0, _queryString.length - 1);
+        let querys = _queryString.split(",");
+        let _queryDict = new Set();
+        _queryString = "";
+        for (let i = 0; i < querys.length; i++) {
+            _queryDict.add(querys[i].trim());
+            _queryString += querys[i].trim() + ",";
+        }
+        this.queryDict = _queryDict;
+        this.queryString = _queryString.slice(0, _queryString.length - 1);
+        this.offset = 0;
+        this.fetchResultsAndDisplay();
+        // console.log(this.queryDict);
+        // console.log(this.queryString);
+    }
 
     decideGridColor = (item) => {
         if (item.tag_type == "author") {
@@ -345,6 +361,16 @@ class Content extends Component {
         this.decideDisplayFunction()();
     };
 
+    onClickPrev = () => {
+        this.offset -= 20;
+        this.fetchResultsAndDisplay()
+    }
+
+    onClickNext = () => {
+        this.offset += 20;
+        this.fetchResultsAndDisplay()
+    }
+
     content = () => {
         return [
             <div
@@ -358,6 +384,30 @@ class Content extends Component {
                 </div>
             </div>,
             <div>{this.displayResults()}</div>,
+            <div className="pnbuttons">
+                <button
+                    className={
+                        "ui " +
+                        (this.offset == 0 ? "disabled" : "") +
+                        " left attached button"
+                    }
+                    onClick={this.offset == 0 ? null : this.onClickPrev}
+                >
+                    <i class="caret left icon"></i>Prev
+                </button>
+                <button
+                    className={
+                        "right attached ui " +
+                        (Object.keys(this.state.problems).length < 20
+                            ? "disabled"
+                            : "") +
+                        " button"
+                    }
+                    onClick={this.offset == 0 ? this.onClickNext : null}
+                >
+                    Next<i class="caret right icon"></i>
+                </button>
+            </div>,
         ];
     };
 
