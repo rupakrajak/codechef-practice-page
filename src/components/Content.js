@@ -49,6 +49,7 @@ class Content extends Component {
             )
             .then((res) => {
                 console.log(res);
+                eventBus.dispatch("resultsFetched", { message: res });
                 this.ascDataOnCount = res.data.slice();
                 this.desDataOnCount = res.data.slice();
                 this.ascDataOnName = res.data.slice();
