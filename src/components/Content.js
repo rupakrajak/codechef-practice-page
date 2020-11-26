@@ -403,7 +403,7 @@ class Content extends Component {
                             : "") +
                         " button"
                     }
-                    onClick={this.offset == 0 ? this.onClickNext : null}
+                    onClick={Object.keys(this.state.problems).length < 20 ? null : this.onClickNext}
                 >
                     Next<i class="caret right icon"></i>
                 </button>
