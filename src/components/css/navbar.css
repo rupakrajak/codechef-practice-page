@@ -153,6 +153,28 @@
     border-radius: 14px;
 }
 
+#searchinputgreen {
+    position: relative;
+    display: inline;
+    margin: 0 3px 0 0;
+    height: 28px;
+    width: 250px;
+    padding: 7px;
+    border: solid 2px rgb(158, 255, 145);
+    border-radius: 14px;
+}
+
+#searchinputred {
+    position: relative;
+    display: inline;
+    margin: 0 3px 0 0;
+    height: 28px;
+    width: 250px;
+    padding: 7px;
+    border: solid 2px rgb(255, 157, 157);
+    border-radius: 14px;
+}
+
 #searchbutton {
     position: relative;
     margin: auto;
@@ -207,6 +229,8 @@
 }
 
 #searchinput:focus,
+#searchinputred:focus,
+#searchinputgreen:focus,
 #searchbutton:focus {
     outline: none;
 }

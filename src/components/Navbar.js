@@ -28,6 +28,7 @@ class Navbar extends Component {
         this.tagList = [];
         this.tags = new Set();
         this.invalidTags = false;
+        this.hasLast = false;
     }
 
     componentDidMount = () => {
@@ -59,7 +60,7 @@ class Navbar extends Component {
                 this.setState({
                     cursor: 0,
                 });
-            if (e.keyCode == 13 && !this.invalidTags) {
+            if (e.keyCode == 13 && !this.invalidTags && this.hasLast) {
                 this.inputRef.current.blur();
                 this.onSearch(this.state.value);
             }
@@ -91,6 +92,7 @@ class Navbar extends Component {
 
     _onClickSuggestion = (item) => {
         let newValue = this.onSuggestionSelectionText(item);
+        this.getSuggestions(newValue);
         // let tempValue = this.state.value.trim().toLowerCase().slice();
         // let tempValueLength = tempValue.length;
         // let inputs = tempValue.slice().split(",");
@@ -113,6 +115,7 @@ class Navbar extends Component {
         const inputs = value.slice().split(",");
         const inputValue = inputs.pop().trim().toLowerCase();
         if (inputs.length > 0) this.validatePrevTags(inputs);
+        this.hasLast = this.tags.has(inputValue);
         // console.log(this.tagList);
         // console.log
         const inputLength = inputValue.length;
@@ -192,7 +195,7 @@ class Navbar extends Component {
     };
 
     onSearch = (val) => {
-        if (val != "" && !this.invalidTags)
+        if (val != "" && !this.invalidTags && this.hasLast)
             eventBus.dispatch("searched", { message: val });
     };
 
@@ -294,6 +297,14 @@ class Navbar extends Component {
         });
     };
 
+    decideSearchInputColor = () => {
+        if (this.state.value === "") return "searchinput";
+        else {
+            if (this.hasLast) return "searchinputgreen";
+            else return "searchinputred";
+        }
+}
+
     render() {
         // console.log(this.state.value);
         // console.log(this.state.suggestions);
@@ -312,7 +323,7 @@ class Navbar extends Component {
                     <div id="searchbar">
                         <input
                             ref={this.inputRef}
-                            id="searchinput"
+                            id={this.decideSearchInputColor()}
                             type="text"
                             placeholder="Search tags..."
                             autoComplete="on"
