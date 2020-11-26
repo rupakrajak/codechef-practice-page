@@ -9,7 +9,6 @@ import {
 import axios from "axios";
 import Content from "./Content";
 import eventBus from "./EventBus";
-import Autosuggest from "react-autosuggest";
 
 class Navbar extends Component {
     constructor() {
@@ -42,16 +41,27 @@ class Navbar extends Component {
         });
     };
 
+    onSuggestionSelectionText = (suffix) => {
+        let tempValue = this.state.value.trim().slice();
+        let tempValueLength = tempValue.length;
+        let inputs = tempValue.slice().split(",");
+        let lastInputLength = inputs.pop().trim().length;
+        tempValue =
+            tempValue.slice(0, tempValueLength - lastInputLength) + suffix;
+        return tempValue;
+    };
+
     handleKeyDown = (e) => {
         const _cursor = this.state.cursor;
         // arrow up/down button should select next/previous list element
         if (_cursor == -1) {
-            if (e.keyCode == 40) 
+            if (e.keyCode == 40)
                 this.setState({
                     cursor: 0,
-                })
-            if (e.keyCode == 13) {
+                });
+            if (e.keyCode == 13 && !this.invalidTags) {
                 this.inputRef.current.blur();
+                this.onSearch(this.state.value);
             }
         } else {
             if (e.keyCode === 38 && _cursor > 0) {
@@ -67,18 +77,29 @@ class Navbar extends Component {
                 });
             } else if (e.keyCode == 13) {
                 // console.log(this.state.suggestions[_cursor])
-                this.getSuggestions(this.state.suggestions[_cursor] + ",");
+                let newValue = this.onSuggestionSelectionText(
+                    this.state.suggestions[_cursor]
+                );
+                this.getSuggestions(newValue);
                 this.setState({
-                    value: this.state.suggestions[_cursor] + ",",
+                    value: newValue,
                     cursor: -1,
-                })
+                });
             }
         }
     };
 
     _onClickSuggestion = (item) => {
-        console.log(item);
-    } 
+        let newValue = this.onSuggestionSelectionText(item);
+        // let tempValue = this.state.value.trim().toLowerCase().slice();
+        // let tempValueLength = tempValue.length;
+        // let inputs = tempValue.slice().split(",");
+        // let lastInputLength = inputs.pop().trim().length;
+        // tempValue = tempValue.slice(0, tempValueLength - lastInputLength) + item;
+        this.setState({
+            value: newValue,
+        });
+    };
 
     validatePrevTags = (inputs) => {
         for (let i = 0; i < inputs.length; i++)
@@ -88,7 +109,7 @@ class Navbar extends Component {
 
     getSuggestions = (value) => {
         this.invalidTags = false;
-        console.log("hello "+ value);
+        console.log("hello " + value);
         const inputs = value.slice().split(",");
         const inputValue = inputs.pop().trim().toLowerCase();
         if (inputs.length > 0) this.validatePrevTags(inputs);
@@ -104,13 +125,13 @@ class Navbar extends Component {
         const _suggestions = [];
         for (let i = 0; i < Math.min(7, rawSuggestions.length); i++)
             _suggestions.push(rawSuggestions[i].tag);
-            
+
         if (inputLength != 0 && _suggestions.length === 0)
             this.invalidTags = true;
         this.setState({
             suggestions: _suggestions,
         });
-            // if (inputLength === 0) {
+        // if (inputLength === 0) {
         //     this.setState({
         //         suggest: 0,
         //     });
@@ -171,7 +192,8 @@ class Navbar extends Component {
     };
 
     onSearch = (val) => {
-        if (val != "") eventBus.dispatch("searched", { message: val });
+        if (val != "" && !this.invalidTags)
+            eventBus.dispatch("searched", { message: val });
     };
 
     displayName = () => {
@@ -214,28 +236,41 @@ class Navbar extends Component {
     };
 
     showSuggestions = () => {
-        if (!this.invalidTags) {
-            return this.state.suggestions.map((item, i) => {
+        if (this.tagsAvail) {
+            if (!this.invalidTags) {
+                return this.state.suggestions.map((item, i) => {
+                    return (
+                        <h1
+                            onMouseDown={() => this._onClickSuggestion(item)}
+                            className={
+                                "results" +
+                                (this.state.cursor === i ? " active" : "")
+                            }
+                        >
+                            {item}
+                        </h1>
+                    );
+                });
+            } else {
                 return (
-                    <h1
-                        onMouseDown={() => this._onClickSuggestion(item)}
-                        className={
-                            "results" +
-                            (this.state.cursor === i ? " active" : "")
-                        }
-                    >
-                        {item}
+                    <h1 className="invalidresults">
+                        No suggestions found.
+                        <br />
+                        Enter a valid tag.
                     </h1>
                 );
-            });
+            }
         } else {
-            return <h1 className='invalidresults'>No suggestions found.<br />Enter a valid tag.</h1>
+            return (
+                <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+            );
         }
     };
 
     _onFocus = () => {
         console.log("focus");
         if (this.state.suggest === 0) {
+            this.getSuggestions(this.state.value);
             this.setState({
                 suggest: 1,
             });
@@ -245,6 +280,7 @@ class Navbar extends Component {
     _onBlur = () => {
         if (this.state.suggest === 1) {
             this.setState({
+                cursor: -1,
                 suggest: 0,
             });
         }
@@ -259,15 +295,8 @@ class Navbar extends Component {
     };
 
     render() {
-        console.log(this.state.value);
-        console.log(this.state.suggestions);
-        // const value = this.state.value;
-        // const inputProps = {
-        //     value,
-        //     placeholder: "Search tags...",
-        //     onChange: this.onChange,
-        //     id: "searchinput",
-        // };
+        // console.log(this.state.value);
+        // console.log(this.state.suggestions);
         return (
             <div id="navbar">
                 <div id="upper-panel">
@@ -281,18 +310,6 @@ class Navbar extends Component {
                 </div>
                 <div id="lower-panel">
                     <div id="searchbar">
-                        {/* <Autosuggest
-                            suggestions={this.state.suggestions}
-                            onSuggestionsFetchRequested={
-                                this.onSuggestionsFetchRequested
-                            }
-                            onSuggestionsClearRequested={
-                                this.onSuggestionsClearRequested
-                            }
-                            getSuggestionValue={this.getSuggestionValue}
-                            renderSuggestion={this.renderSuggestion}
-                            inputProps={inputProps}
-                        /> */}
                         <input
                             ref={this.inputRef}
                             id="searchinput"
@@ -307,7 +324,7 @@ class Navbar extends Component {
                         ></input>
                         <button
                             id="searchbutton"
-                            onClick={() => this.onSearch(this.value)}
+                            onClick={() => this.onSearch(this.state.value)}
                         >
                             Search
                         </button>
@@ -318,13 +335,6 @@ class Navbar extends Component {
                                     : "searchresultsoff"
                             }
                         >
-                            {/* <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1> */}
                             {this.showSuggestions()}
                         </div>
                     </div>
