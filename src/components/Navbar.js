@@ -5,6 +5,7 @@ import {
     isAuthorized,
     unauthorize,
     getAccessToken,
+    onMountCheckUserStatus,
 } from "./provider/Oauth";
 import axios from "axios";
 import Content from "./Content";
@@ -32,6 +33,7 @@ class Navbar extends Component {
     }
 
     componentDidMount = () => {
+        if (onMountCheckUserStatus()) this.checkAuthorized();
         eventBus.on("authorisedChanged", (data) => this.checkAuthorized());
         eventBus.on("resultsFetched", (data) => {
             this.tagsAvail = true;
@@ -54,7 +56,6 @@ class Navbar extends Component {
 
     handleKeyDown = (e) => {
         const _cursor = this.state.cursor;
-        // arrow up/down button should select next/previous list element
         if (_cursor == -1) {
             if (e.keyCode == 40)
                 this.setState({
@@ -77,7 +78,6 @@ class Navbar extends Component {
                     cursor: _cursor + 1,
                 });
             } else if (e.keyCode == 13) {
-                // console.log(this.state.suggestions[_cursor])
                 let newValue = this.onSuggestionSelectionText(
                     this.state.suggestions[_cursor]
                 );

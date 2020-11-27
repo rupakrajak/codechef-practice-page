@@ -239,14 +239,14 @@ class Content extends Component {
                         problems: response.data.result.data.content,
                         serverResponseCode: response.data.result.data.code,
                         serverResponseMessage:
-                                response.data.result.data.message,
+                            response.data.result.data.message,
                     });
                 } else {
                     this.setState({
                         hasData: 2,
                         serverResponseCode: response.data.result.errors.code,
                         serverResponseMessage:
-                        response.data.result.errors.message,
+                            response.data.result.errors.message,
                     });
                 }
                 // console.log(Object.keys(this.state.problems).length + " Problem Count");
@@ -268,7 +268,7 @@ class Content extends Component {
     onClickButtonShow = (name, count) => {
         let _queryString = name.trim().slice();
         if (_queryString[_queryString.length - 1] == ",")
-        _queryString = _queryString.slice(0, _queryString.length - 1);
+            _queryString = _queryString.slice(0, _queryString.length - 1);
         let querys = _queryString.split(",");
         let _queryDict = new Set();
         _queryString = "";
@@ -282,7 +282,7 @@ class Content extends Component {
         this.fetchResultsAndDisplay();
         // console.log(this.queryDict);
         // console.log(this.queryString);
-    }
+    };
 
     decideGridColor = (item) => {
         if (item.tag_type == "author") {
@@ -363,13 +363,13 @@ class Content extends Component {
 
     onClickPrev = () => {
         this.offset -= 20;
-        this.fetchResultsAndDisplay()
-    }
+        this.fetchResultsAndDisplay();
+    };
 
     onClickNext = () => {
         this.offset += 20;
-        this.fetchResultsAndDisplay()
-    }
+        this.fetchResultsAndDisplay();
+    };
 
     content = () => {
         return [
@@ -388,22 +388,36 @@ class Content extends Component {
                 <button
                     className={
                         "ui " +
-                        (this.offset == 0 ? "disabled" : "") +
+                        (this.offset == 0 ||
+                        this.state.serverResponseCode != 9001
+                            ? "disabled"
+                            : "") +
                         " left attached button"
                     }
-                    onClick={this.offset == 0 ? null : this.onClickPrev}
+                    onClick={
+                        this.offset == 0 ||
+                        this.state.serverResponseCode != 9001
+                            ? null
+                            : this.onClickPrev
+                    }
                 >
                     <i class="caret left icon"></i>Prev
                 </button>
                 <button
                     className={
                         "right attached ui " +
-                        (Object.keys(this.state.problems).length < 20
+                        (Object.keys(this.state.problems).length < 20 ||
+                        this.state.serverResponseCode != 9001
                             ? "disabled"
                             : "") +
                         " button"
                     }
-                    onClick={Object.keys(this.state.problems).length < 20 ? null : this.onClickNext}
+                    onClick={
+                        Object.keys(this.state.problems).length < 20 ||
+                        this.state.serverResponseCode != 9001
+                            ? null
+                            : this.onClickNext
+                    }
                 >
                     Next<i class="caret right icon"></i>
                 </button>
