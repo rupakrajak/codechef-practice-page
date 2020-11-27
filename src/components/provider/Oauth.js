@@ -1,5 +1,5 @@
 import axios from "axios";
-import eventBus from "./../EventBus"
+import eventBus from "./../EventBus";
 
 const grantTypes = ["authorization_code", "client_credentials"];
 
@@ -39,7 +39,6 @@ const requestAccessToken = async (code) => {
         console.log(resp.data);
         sessionData.ACCESS_TOKEN = resp.data.result.data.access_token;
         sessionData.REFRESH_TOKEN = resp.data.result.data.refresh_token;
-        console.log(sessionData.ACCESS_TOKEN);
         return "success";
     }
 };
@@ -74,10 +73,15 @@ const refreshToken = async () => {
         if (sessionData.grant_type == "authorization_code")
             sessionData.REFRESH_TOKEN = resp.data.result.data.refresh_token;
         console.log(sessionData.ACCESS_TOKEN);
+        window.localStorage.setItem("sessionData", JSON.stringify(sessionData));
         return "success";
     } else {
         return "failure";
     }
+};
+
+const getClientID = () => {
+    return oauthData.CLIENT_ID;
 };
 
 const getAccessToken = () => {
@@ -88,77 +92,54 @@ const isAuthorized = () => {
     return sessionData.authorized;
 };
 
+const onMountCheckUserStatus = () => {
+    const retriveItem = window.localStorage.getItem("sessionData");
+    if (retriveItem == null) return false;
+    else {
+        const _sessionData = JSON.parse(retriveItem);
+        sessionData = _sessionData;
+        return true;
+    }
+};
+
 const authorize = () => {
     window.location = `${oauthData.api_authorize_endpoint}?response_type=${oauthData.response_type}&client_id=${oauthData.CLIENT_ID}&state=${oauthData.state}&redirect_uri=${oauthData.redirect_uri}`;
 };
 
-const unauthorize = async() => {
-    sessionData.authorized = false;
-    sessionData.grant_type = grantTypes[1];
-    let stat = await refreshToken();
-    if (stat == 'success') {
-        eventBus.dispatch("authorisedChanged", { message: true });
-    }
-}
-
-// const completeAuthorization = () => {
-//     // auth_window.close();
-//     console.log(return_url);
-// };
-
-// let return_url, auth_window;
-
-// const authorize = () => {
-//     console.log(oauthData.api_authorize_endpoint);
-//     const auth_url = `${oauthData.api_authorize_endpoint}?response_type=${oauthData.response_type}&client_id=${oauthData.CLIENT_ID}&state=${oauthData.state}&redirect_uri=${oauthData.redirect_uri}`;
-//     // const config = {
-//     //     params: {
-//     //         response_type: this.oauthData.response_type,
-//     //         client_id: this.oauthData.CLIENT_ID,
-//     //         state: this.oauthData.state,
-//     //         redirect_uri: this.oauthData.redirect_uri,
-//     //     }
-//     // }
-//     auth_window = window.open(
-//         auth_url,
-//         "CodeChef | Login",
-//         "width=1140, height=640"
-//     );
-//     auth_window.focus();
-//     // auth_window.onbeforeunload = () => {
-//     //     console.log("Hello");
-//     //     return_url = auth_window.location;
-//     //     completeAuthorization();
-//     //     auth_window.close();
-//     // };
-//     auth_window.onbeforeunload = () => {
-//         console.log("Hello");
-//         return_url = auth_window.location.href;
-//         completeAuthorization();
-//         // auth_window.close();
-//     };
-// };
-
 const onMountCheckUrl = async () => {
     const queryString = window.location.search;
     const paramList = new URLSearchParams(queryString);
-    // console.log(queryString);
-    // console.log(paramList.get('code'));
     if (paramList.has("code")) {
         let stat = await requestAccessToken(paramList.get("code"));
         if ((stat = "success")) {
             sessionData.authorized = true;
             sessionData.grant_type = grantTypes[0];
+            window.localStorage.setItem(
+                "sessionData",
+                JSON.stringify(sessionData)
+            );
             eventBus.dispatch("authorisedChanged", { message: true });
         }
     }
 };
 
+const unauthorize = async () => {
+    sessionData.authorized = false;
+    sessionData.grant_type = grantTypes[1];
+    let stat = await refreshToken();
+    if (stat == "success") {
+        window.localStorage.setItem("sessionData", JSON.stringify(sessionData));
+        eventBus.dispatch("authorisedChanged", { message: true });
+    }
+};
+
 export {
+    getClientID,
     refreshToken,
     getAccessToken,
     isAuthorized,
     authorize,
     unauthorize,
     onMountCheckUrl,
+    onMountCheckUserStatus,
 };

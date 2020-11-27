@@ -25,5 +25,5 @@ yarn-error.log*
 # useless files
 home.js
 samp.js
-
+config.json
 

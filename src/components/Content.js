@@ -1,41 +1,56 @@
 import React, { Component } from "react";
 import axios from "axios";
 import "./css/content.css";
-import configData from "./config.json";
 import eventBus from "./EventBus";
-import { getAccessToken, refreshToken, onMountCheckUrl } from "./provider/Oauth";
+import sorry from "./images/sorry.png";
+import {
+    getClientID,
+    getAccessToken,
+    refreshToken,
+    onMountCheckUrl,
+} from "./provider/Oauth";
+
+String.prototype.toSentenceCase = function () {
+    return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
+};
 
 class Content extends Component {
     constructor() {
         super();
+
+        this.state = {
+            allButton: 1,
+            authorButton: 0,
+            tagButton: 0,
+            tagNameButton: 1,
+            problemCountButton: 0,
+            hasData: 0,
+            serverResponseCode: 0,
+            serverResponseMessage: 0,
+            dataList: [],
+            problems: [],
+        };
+        this.offset = 0;
+        this.tagList = {};
+        this.queryDict = new Set();
+        this.queryString = "";
+        this.norData = [];
+        this.ascDataOnCount = [];
+        this.desDataOnCount = [];
+        this.ascDataOnName = [];
+        this.desDataOnName = [];
+        this.sortIcon = {
+            0: "",
+            1: "up",
+            2: "down",
+        };
     }
 
-    tagList = {};
-
-    state = {
-        tagName: "",
-        hasData: 0,
-        dataList: [],
-        problems: [],
-    };
-
     componentDidMount() {
-        // console.log(process.env.REACT_APP_sample);
-        eventBus.on("searched", (data) =>
-            this.onClickButtonShow(data.message, 0)
-        );
+        eventBus.on("searched", (data) => {
+            this.onClickButtonShow(data.message, 0);
+        });
         onMountCheckUrl();
-        // console.log(window.location);
-        // let URL = 'https://api.codechef.com/tags/problems';
-        // let params = {
-        //     limit: 100,
-        // };
-        // let config = {
-        //     headers: {
-        //         Accept: 'application/json'
-
-        //     }
-        // }
         // axios.get('https://cors-anywhere.herokuapp.com/https://www.codechef.com/get/tags/problems')
         axios
             .get(
@@ -43,28 +58,48 @@ class Content extends Component {
             )
             .then((res) => {
                 console.log(res);
+                eventBus.dispatch("resultsFetched", { message: res });
+                this.ascDataOnCount = res.data.slice();
+                this.desDataOnCount = res.data.slice();
+                this.ascDataOnName = res.data.slice();
+                this.desDataOnName = res.data.slice();
+                this.ascDataOnCount.sort((a, b) => {
+                    return a.count - b.count;
+                });
+                this.desDataOnCount.sort((a, b) => {
+                    return b.count - a.count;
+                });
+                this.ascDataOnName.sort((a, b) => {
+                    let fa = a.tag.toLowerCase(),
+                        fb = b.tag.toLowerCase();
+                    if (fa < fb) {
+                        return -1;
+                    }
+                    if (fa > fb) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                this.desDataOnName.sort((a, b) => {
+                    let fa = a.tag.toLowerCase(),
+                        fb = b.tag.toLowerCase();
+                    if (fa > fb) {
+                        return -1;
+                    }
+                    if (fa < fb) {
+                        return 1;
+                    }
+                    return 0;
+                });
                 this.setState({
                     hasData: 1,
-                    dataList: res.data,
+                    dataList: this.ascDataOnName,
                 });
             });
     }
 
-    // fillTagList = () => {
-    //     this.state.dataList.forEach((item) => {
-    //         if (this.tagList.hasOwnProperty(item.tag)) {
-    //             this.tagList[item.tag] += 1;
-    //         } else {
-    //             this.tagList[item.tag] = 1;;
-    //         }
-    //     })
-    //     for (let item in this.tagList) {
-    //         console.log(item + " " + this.tagList[item])
-    //     }
-    // }
-
     decideTagColor = (tag) => {
-        if (this.state.tagName == tag) {
+        if (this.queryDict.has(tag)) {
             return (
                 <div
                     className="spTag"
@@ -86,7 +121,8 @@ class Content extends Component {
     };
 
     renderProblems = (item) => {
-        const accuracy = (item.solved / item.attempted).toFixed(2);
+        const accuracy =
+            ((item.solved / item.attempted) * 100).toFixed(2) + "%";
         return (
             <div>
                 <div className="problemCard">
@@ -130,21 +166,35 @@ class Content extends Component {
     };
 
     displayResults = () => {
-        console.log(typeof this.state.problems);
-        const items = Object.values(this.state.problems);
-        return [
-            items.map((item) => {
-                return this.renderProblems(item);
-            }),
-        ];
+        if (this.state.serverResponseCode == 9001) {
+            const items = Object.values(this.state.problems);
+            return [
+                items.map((item) => {
+                    return this.renderProblems(item);
+                }),
+            ];
+        } else {
+            return (
+                <div className="error">
+                    <div className="errorimg">
+                        <img
+                            src={sorry}
+                            alt="Sorry"
+                            width="100"
+                            height="100"
+                        ></img>
+                    </div>
+                    <h1>{this.state.serverResponseMessage.toSentenceCase()}</h1>
+                </div>
+            );
+        }
     };
 
-    onClickButtonShow = async(name, count) => {
+    fetchResultsAndDisplay = async () => {
         let isUnauthorised = false;
         this.setState({
             hasData: 0,
         });
-        console.log(configData.Client_ID);
         let URL = "https://api.codechef.com/tags/problems";
         let config = {
             headers: {
@@ -152,41 +202,60 @@ class Content extends Component {
                 Authorization: "Bearer " + getAccessToken(),
             },
             params: {
-                filter: name,
+                filter: this.queryString,
                 limit: 100,
+                offset: this.offset,
             },
         };
         try {
             let response = await axios.get(URL, config);
-            console.log(response);
             if (response.status == 200) {
-                console.log(response);
-                this.setState({
-                    tagName: name,
-                    hasData: 2,
-                    problems: response.data.result.data.content,
-                });
-                console.log(this.state.problems);
+                if (response.data.status == "OK") {
+                    this.setState({
+                        hasData: 2,
+                        problems: response.data.result.data.content,
+                        serverResponseCode: response.data.result.data.code,
+                        serverResponseMessage:
+                            response.data.result.data.message,
+                    });
+                } else {
+                    this.setState({
+                        hasData: 2,
+                        serverResponseCode: response.data.result.errors.code,
+                        serverResponseMessage:
+                            response.data.result.errors.message,
+                    });
+                }
             }
         } catch (error) {
-            console.log(error);
-            console.log('hello');
+            console.log(error.response);
             isUnauthorised = true;
         }
         if (isUnauthorised) {
             let stat = await refreshToken();
-            if (stat == 'success') {
+            if (stat == "success") {
                 isUnauthorised = false;
-                this.onClickButtonShow(name, count);  
-            } 
+                this.fetchResultsAndDisplay();
+            }
         }
     };
 
-    // async resolveUnauthorized(name, count) {
-    //     refreshToken().then((res) => {
-    //         this.onClickButtonShow(name, count);
-    //     });
-    // }
+    onClickButtonShow = (name, count) => {
+        let _queryString = name.trim().slice();
+        if (_queryString[_queryString.length - 1] == ",")
+            _queryString = _queryString.slice(0, _queryString.length - 1);
+        let querys = _queryString.split(",");
+        let _queryDict = new Set();
+        _queryString = "";
+        for (let i = 0; i < querys.length; i++) {
+            _queryDict.add(querys[i].trim());
+            _queryString += querys[i].trim() + ",";
+        }
+        this.queryDict = _queryDict;
+        this.queryString = _queryString.slice(0, _queryString.length - 1);
+        this.offset = 0;
+        this.fetchResultsAndDisplay();
+    };
 
     decideGridColor = (item) => {
         if (item.tag_type == "author") {
@@ -228,24 +297,38 @@ class Content extends Component {
         ];
     };
 
+    authorsOnly = () => {
+        return [
+            this.state.dataList.map((item) => {
+                if (item.tag_type == "author") return this.renderGridItem(item);
+            }),
+        ];
+    };
+
+    tagsOnly = () => {
+        return [
+            this.state.dataList.map((item) => {
+                if (item.tag_type == "actual_tag")
+                    return this.renderGridItem(item);
+            }),
+        ];
+    };
+
     backAction = () => {
         this.setState({
-            hasData: 0,
+            hasData: 1,
         });
-        // axios.get('https://cors-anywhere.herokuapp.com/https://www.codechef.com/get/tags/problems')
-        axios
-            .get(
-                "https://thingproxy.freeboard.io/fetch/https://www.codechef.com/get/tags/problems"
-            )
-            .then((res) => {
-                console.log(res);
-                this.setState({
-                    hasData: 1,
-                    dataList: res.data,
-                    tag: "",
-                });
-            });
-        this.initialContent();
+        this.decideDisplayFunction()();
+    };
+
+    onClickPrev = () => {
+        this.offset -= 20;
+        this.fetchResultsAndDisplay();
+    };
+
+    onClickNext = () => {
+        this.offset += 20;
+        this.fetchResultsAndDisplay();
     };
 
     content = () => {
@@ -261,7 +344,185 @@ class Content extends Component {
                 </div>
             </div>,
             <div>{this.displayResults()}</div>,
+            <div className="pnbuttons">
+                <button
+                    className={
+                        "ui " +
+                        (this.offset == 0 ||
+                        this.state.serverResponseCode != 9001
+                            ? "disabled"
+                            : "") +
+                        " left attached button"
+                    }
+                    onClick={
+                        this.offset == 0 ||
+                        this.state.serverResponseCode != 9001
+                            ? null
+                            : this.onClickPrev
+                    }
+                >
+                    <i className="caret left icon"></i>Prev
+                </button>
+                <button
+                    className={
+                        "right attached ui " +
+                        (Object.keys(this.state.problems).length < 20 ||
+                        this.state.serverResponseCode != 9001
+                            ? "disabled"
+                            : "") +
+                        " button"
+                    }
+                    onClick={
+                        Object.keys(this.state.problems).length < 20 ||
+                        this.state.serverResponseCode != 9001
+                            ? null
+                            : this.onClickNext
+                    }
+                >
+                    Next<i className="caret right icon"></i>
+                </button>
+            </div>,
         ];
+    };
+
+    triggerAll = () => {
+        this.setState({
+            allButton: 1,
+            authorButton: 0,
+            tagButton: 0,
+        });
+    };
+
+    triggerAuthors = () => {
+        this.setState({
+            allButton: 0,
+            authorButton: 1,
+            tagButton: 0,
+        });
+    };
+
+    triggerTags = () => {
+        this.setState({
+            allButton: 0,
+            authorButton: 0,
+            tagButton: 1,
+        });
+    };
+
+    triggerTagName = () => {
+        let next = 0;
+        if (this.state.tagNameButton == 0) next = 1;
+        else {
+            next = this.state.tagNameButton == 1 ? 2 : 1;
+        }
+        if (next == 1) {
+            this.setState({
+                tagNameButton: next,
+                problemCountButton: 0,
+                dataList: this.ascDataOnName,
+            });
+        } else {
+            this.setState({
+                tagNameButton: next,
+                problemCountButton: 0,
+                dataList: this.desDataOnName,
+            });
+        }
+    };
+
+    triggerProblemCount = () => {
+        let next = 0;
+        if (this.state.problemCountButton == 0) next = 1;
+        else {
+            next = this.state.problemCountButton == 1 ? 2 : 1;
+        }
+        if (next == 1) {
+            this.setState({
+                problemCountButton: next,
+                tagNameButton: 0,
+                dataList: this.ascDataOnCount,
+            });
+        } else {
+            this.setState({
+                problemCountButton: next,
+                tagNameButton: 0,
+                dataList: this.desDataOnCount,
+            });
+        }
+    };
+
+    tagNameBtnIconSelector = () => {
+        return this.sortIcon[this.state.tagNameButton];
+    };
+
+    probCntBtnIconSelector = () => {
+        return this.sortIcon[this.state.problemCountButton];
+    };
+
+    showButtons = () => {
+        return [
+            <div className="buttonbar">
+                <div className="leftbuttons">
+                    <div className="ui labeled icon buttons">
+                        <button className="ui button" onClick={this.triggerAll}>
+                            <i className="circle outline icon"></i>
+                            ALL
+                        </button>
+                        <button
+                            className="ui button"
+                            onClick={this.triggerAuthors}
+                        >
+                            <i id="authordot" className="circle icon"></i>
+                            AUTHORS
+                        </button>
+                        <button
+                            className="ui button"
+                            onClick={this.triggerTags}
+                        >
+                            <i id="tagdot" className="circle icon"></i>
+                            TAGS
+                        </button>
+                    </div>
+                </div>
+                ,
+                <div className="rightbuttons">
+                    <div className="ui labeled icon buttons">
+                        <button
+                            className="ui button"
+                            onClick={this.triggerTagName}
+                        >
+                            <i
+                                className={
+                                    "sort " +
+                                    this.tagNameBtnIconSelector() +
+                                    " icon"
+                                }
+                            ></i>
+                            TAG NAME
+                        </button>
+                        <button
+                            className="ui button"
+                            onClick={this.triggerProblemCount}
+                        >
+                            <i
+                                className={
+                                    "sort " +
+                                    this.probCntBtnIconSelector() +
+                                    " icon"
+                                }
+                            ></i>
+                            PROBLEM COUNT
+                        </button>
+                    </div>
+                </div>
+            </div>,
+        ];
+    };
+
+    decideDisplayFunction = () => {
+        if (this.state.allButton == 1) return this.initialContent;
+        if (this.state.authorButton == 1) return this.authorsOnly;
+        if (this.state.tagButton == 1) return this.tagsOnly;
     };
 
     render() {
@@ -276,8 +537,11 @@ class Content extends Component {
         } else if (this.state.hasData == 1) {
             return (
                 <div className="initialContent">
-                    <h1>Tag categories:</h1>
-                    <div className="ui grid">{this.initialContent()}</div>
+                    <h1 id="heading">Tag categories:</h1>
+                    {this.showButtons()}
+                    <div className="ui grid">
+                        {this.decideDisplayFunction()()}
+                    </div>
                 </div>
             );
         } else if (this.state.hasData == 2) {
