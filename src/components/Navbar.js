@@ -44,107 +44,6 @@ class Navbar extends Component {
         });
     };
 
-    onSuggestionSelectionText = (suffix) => {
-        let tempValue = this.state.value.trim().slice();
-        let tempValueLength = tempValue.length;
-        let inputs = tempValue.slice().split(",");
-        let lastInputLength = inputs.pop().trim().length;
-        tempValue =
-            tempValue.slice(0, tempValueLength - lastInputLength) + suffix;
-        return tempValue;
-    };
-
-    handleKeyDown = (e) => {
-        const _cursor = this.state.cursor;
-        if (_cursor == -1) {
-            if (e.keyCode == 40)
-                this.setState({
-                    cursor: 0,
-                });
-            if (e.keyCode == 13 && !this.invalidTags && this.hasLast) {
-                this.inputRef.current.blur();
-                this.onSearch(this.state.value);
-            }
-        } else {
-            if (e.keyCode === 38 && _cursor > 0) {
-                this.setState({
-                    cursor: _cursor - 1,
-                });
-            } else if (
-                e.keyCode === 40 &&
-                _cursor < this.state.suggestions.length - 1
-            ) {
-                this.setState({
-                    cursor: _cursor + 1,
-                });
-            } else if (e.keyCode == 13) {
-                let newValue = this.onSuggestionSelectionText(
-                    this.state.suggestions[_cursor]
-                );
-                this.getSuggestions(newValue);
-                this.setState({
-                    value: newValue,
-                    cursor: -1,
-                });
-            }
-        }
-    };
-
-    _onClickSuggestion = (item) => {
-        let newValue = this.onSuggestionSelectionText(item);
-        this.getSuggestions(newValue);
-        // let tempValue = this.state.value.trim().toLowerCase().slice();
-        // let tempValueLength = tempValue.length;
-        // let inputs = tempValue.slice().split(",");
-        // let lastInputLength = inputs.pop().trim().length;
-        // tempValue = tempValue.slice(0, tempValueLength - lastInputLength) + item;
-        this.setState({
-            value: newValue,
-        });
-    };
-
-    validatePrevTags = (inputs) => {
-        for (let i = 0; i < inputs.length; i++)
-            if (!this.tags.has(inputs[i].trim().toLowerCase()))
-                this.invalidTags = true;
-    };
-
-    getSuggestions = (value) => {
-        this.invalidTags = false;
-        console.log("hello " + value);
-        const inputs = value.slice().split(",");
-        const inputValue = inputs.pop().trim().toLowerCase();
-        if (inputs.length > 0) this.validatePrevTags(inputs);
-        this.hasLast = this.tags.has(inputValue);
-        // console.log(this.tagList);
-        // console.log
-        const inputLength = inputValue.length;
-
-        let rawSuggestions = this.tagList.filter(
-            (item) =>
-                item.tag.toLowerCase().slice(0, inputLength) === inputValue
-        );
-        // console.log(rawSuggestions);
-        const _suggestions = [];
-        for (let i = 0; i < Math.min(7, rawSuggestions.length); i++)
-            _suggestions.push(rawSuggestions[i].tag);
-
-        if (inputLength != 0 && _suggestions.length === 0)
-            this.invalidTags = true;
-        this.setState({
-            suggestions: _suggestions,
-        });
-        // if (inputLength === 0) {
-        //     this.setState({
-        //         suggest: 0,
-        //     });
-        // } else {
-        //     this.setState({
-        //         suggest: 1,
-        //     });
-        // }
-    };
-
     getUserDetails = async () => {
         let URL = "https://api.codechef.com/users/me";
         let config = {
@@ -157,7 +56,7 @@ class Navbar extends Component {
             const resp = await axios.get(URL, config);
             return resp;
         } catch (error) {
-            console.log("Some error occured!");
+            alert("Some error occured!");
             console.log(error);
         }
     };
@@ -168,12 +67,6 @@ class Navbar extends Component {
             let strs = "";
             if (isAuthorized() == true) {
                 let dis = await this.getUserDetails();
-                console.log(dis);
-                console.log(
-                    dis.data.result.data.content.band +
-                        " " +
-                        dis.data.result.data.content.username
-                );
                 uname = dis.data.result.data.content.username;
                 strs = dis.data.result.data.content.band;
             }
@@ -183,20 +76,6 @@ class Navbar extends Component {
                 stars: strs,
             });
         }
-    };
-
-    onClick = async (e) => {
-        e.preventDefault();
-        if (this.state.signedIn == false) {
-            authorize();
-        } else {
-            unauthorize();
-        }
-    };
-
-    onSearch = (val) => {
-        if (val != "" && !this.invalidTags && this.hasLast)
-            eventBus.dispatch("searched", { message: val });
     };
 
     displayName = () => {
@@ -213,29 +92,46 @@ class Navbar extends Component {
                 </div>
             );
         } else {
-            console.log("here!");
             return <div></div>;
         }
     };
 
-    button = () => {
-        let buttonText = "";
-        let classname = "";
-        if (this.state.signedIn == true) {
-            buttonText = "Sign out";
-            classname = "ui button";
-        } else {
-            buttonText = "Sign in";
-            classname = "ui primary button";
+    decideSearchInputColor = () => {
+        if (this.state.value === "") return "searchinput";
+        else {
+            if (this.hasLast) return "searchinputgreen";
+            else return "searchinputred";
         }
-        return (
-            <div id="sign">
-                {this.displayName()}
-                <button className={classname} onClick={this.onClick}>
-                    {buttonText}
-                </button>
-            </div>
+    };
+
+    validatePrevTags = (inputs) => {
+        for (let i = 0; i < inputs.length; i++)
+            if (!this.tags.has(inputs[i].trim().toLowerCase()))
+                this.invalidTags = true;
+    };
+
+    getSuggestions = (value) => {
+        this.invalidTags = false;
+        const inputs = value.slice().split(",");
+        const inputValue = inputs.pop().trim().toLowerCase();
+        if (inputs.length > 0) this.validatePrevTags(inputs);
+        this.hasLast = this.tags.has(inputValue);
+        const inputLength = inputValue.length;
+
+        let rawSuggestions = this.tagList.filter(
+            (item) =>
+                item.tag.toLowerCase().slice(0, inputLength) === inputValue
         );
+
+        const _suggestions = [];
+        for (let i = 0; i < Math.min(7, rawSuggestions.length); i++)
+            _suggestions.push(rawSuggestions[i].tag);
+
+        if (inputLength != 0 && _suggestions.length === 0)
+            this.invalidTags = true;
+        this.setState({
+            suggestions: _suggestions,
+        });
     };
 
     showSuggestions = () => {
@@ -265,13 +161,50 @@ class Navbar extends Component {
             }
         } else {
             return (
-                <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                <div className="lds-ellipsis">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
             );
         }
     };
 
+    signInSignOutButton = () => {
+        let buttonText = "";
+        let classname = "";
+        if (this.state.signedIn == true) {
+            buttonText = "Sign out";
+            classname = "ui button";
+        } else {
+            buttonText = "Sign in";
+            classname = "ui primary button";
+        }
+        return (
+            <div id="sign">
+                {this.displayName()}
+                <button
+                    className={classname}
+                    onClick={this._onClickSignInSignOut}
+                >
+                    {buttonText}
+                </button>
+            </div>
+        );
+    };
+
+    // event handlers
+    _onClickSignInSignOut = async (e) => {
+        e.preventDefault();
+        if (this.state.signedIn == false) {
+            authorize();
+        } else {
+            unauthorize();
+        }
+    };
+
     _onFocus = () => {
-        console.log("focus");
         if (this.state.suggest === 0) {
             this.getSuggestions(this.state.value);
             this.setState({
@@ -291,23 +224,71 @@ class Navbar extends Component {
 
     _onChange = (e) => {
         this.getSuggestions(e.target.value);
-        // console.log("on change");
         this.setState({
             value: e.target.value,
         });
     };
 
-    decideSearchInputColor = () => {
-        if (this.state.value === "") return "searchinput";
-        else {
-            if (this.hasLast) return "searchinputgreen";
-            else return "searchinputred";
+    onSuggestionSelectionText = (suffix) => {
+        let tempValue = this.state.value.trim().slice();
+        let tempValueLength = tempValue.length;
+        let inputs = tempValue.slice().split(",");
+        let lastInputLength = inputs.pop().trim().length;
+        tempValue =
+            tempValue.slice(0, tempValueLength - lastInputLength) + suffix;
+        return tempValue;
+    };
+
+    _onClickSuggestion = (item) => {
+        let newValue = this.onSuggestionSelectionText(item);
+        this.getSuggestions(newValue);
+        this.setState({
+            value: newValue,
+        });
+    };
+
+    _onKeyDown = (e) => {
+        const _cursor = this.state.cursor;
+        if (_cursor == -1) {
+            if (e.keyCode == 40)
+                this.setState({
+                    cursor: 0,
+                });
+            if (e.keyCode == 13 && !this.invalidTags && this.hasLast) {
+                this.inputRef.current.blur();
+                this._onSearch(this.state.value);
+            }
+        } else {
+            if (e.keyCode === 38 && _cursor > 0) {
+                this.setState({
+                    cursor: _cursor - 1,
+                });
+            } else if (
+                e.keyCode === 40 &&
+                _cursor < this.state.suggestions.length - 1
+            ) {
+                this.setState({
+                    cursor: _cursor + 1,
+                });
+            } else if (e.keyCode == 13) {
+                let newValue = this.onSuggestionSelectionText(
+                    this.state.suggestions[_cursor]
+                );
+                this.getSuggestions(newValue);
+                this.setState({
+                    value: newValue,
+                    cursor: -1,
+                });
+            }
         }
-}
+    };
+
+    _onSearch = (val) => {
+        if (val != "" && !this.invalidTags && this.hasLast)
+            eventBus.dispatch("searched", { message: val });
+    };
 
     render() {
-        // console.log(this.state.value);
-        // console.log(this.state.suggestions);
         return (
             <div id="navbar">
                 <div id="upper-panel">
@@ -317,7 +298,7 @@ class Navbar extends Component {
                             <h1>Practice Page</h1>
                         </inline>
                     </div>
-                    {this.button()}
+                    {this.signInSignOutButton()}
                 </div>
                 <div id="lower-panel">
                     <div id="searchbar">
@@ -331,11 +312,11 @@ class Navbar extends Component {
                             onFocus={this._onFocus}
                             onBlur={this._onBlur}
                             onChange={this._onChange}
-                            onKeyDown={this.handleKeyDown}
+                            onKeyDown={this._onKeyDown}
                         ></input>
                         <button
                             id="searchbutton"
-                            onClick={() => this.onSearch(this.state.value)}
+                            onClick={() => this._onSearch(this.state.value)}
                         >
                             Search
                         </button>

@@ -49,8 +49,6 @@ class Content extends Component {
     componentDidMount() {
         eventBus.on("searched", (data) => {
             this.onClickButtonShow(data.message, 0);
-            // console.log(data.message)
-            // console.log(this.queryDict);
         });
         onMountCheckUrl();
         // axios.get('https://cors-anywhere.herokuapp.com/https://www.codechef.com/get/tags/problems')
@@ -93,10 +91,6 @@ class Content extends Component {
                     }
                     return 0;
                 });
-                console.log(this.ascDataOnCount);
-                console.log(this.desDataOnCount);
-                console.log(this.ascDataOnName);
-                console.log(this.desDataOnName);
                 this.setState({
                     hasData: 1,
                     dataList: this.ascDataOnName,
@@ -104,21 +98,7 @@ class Content extends Component {
             });
     }
 
-    // fillTagList = () => {
-    //     this.state.dataList.forEach((item) => {
-    //         if (this.tagList.hasOwnProperty(item.tag)) {
-    //             this.tagList[item.tag] += 1;
-    //         } else {
-    //             this.tagList[item.tag] = 1;;
-    //         }
-    //     })
-    //     for (let item in this.tagList) {
-    //         console.log(item + " " + this.tagList[item])
-    //     }
-    // }
-
     decideTagColor = (tag) => {
-        // if (this.state.tagName == tag) {
         if (this.queryDict.has(tag)) {
             return (
                 <div
@@ -186,7 +166,6 @@ class Content extends Component {
     };
 
     displayResults = () => {
-        console.log(typeof this.state.problems);
         if (this.state.serverResponseCode == 9001) {
             const items = Object.values(this.state.problems);
             return [
@@ -230,9 +209,7 @@ class Content extends Component {
         };
         try {
             let response = await axios.get(URL, config);
-            // console.log(response);
             if (response.status == 200) {
-                console.log(response);
                 if (response.data.status == "OK") {
                     this.setState({
                         hasData: 2,
@@ -249,11 +226,9 @@ class Content extends Component {
                             response.data.result.errors.message,
                     });
                 }
-                // console.log(Object.keys(this.state.problems).length + " Problem Count");
             }
         } catch (error) {
-            console.log(error);
-            console.log("hello");
+            console.log(error.response);
             isUnauthorised = true;
         }
         if (isUnauthorised) {
@@ -280,8 +255,6 @@ class Content extends Component {
         this.queryString = _queryString.slice(0, _queryString.length - 1);
         this.offset = 0;
         this.fetchResultsAndDisplay();
-        // console.log(this.queryDict);
-        // console.log(this.queryString);
     };
 
     decideGridColor = (item) => {
@@ -345,19 +318,6 @@ class Content extends Component {
         this.setState({
             hasData: 1,
         });
-        // axios.get('https://cors-anywhere.herokuapp.com/https://www.codechef.com/get/tags/problems')
-        // axios
-        //     .get(
-        //         "https://thingproxy.freeboard.io/fetch/https://www.codechef.com/get/tags/problems"
-        //     )
-        //     .then((res) => {
-        //         console.log(res);
-        //         this.setState({
-        //             hasData: 1,
-        //             dataList: res.data,
-        //             tag: "",
-        //         });
-        //     });
         this.decideDisplayFunction()();
     };
 
@@ -401,7 +361,7 @@ class Content extends Component {
                             : this.onClickPrev
                     }
                 >
-                    <i class="caret left icon"></i>Prev
+                    <i className="caret left icon"></i>Prev
                 </button>
                 <button
                     className={
@@ -419,7 +379,7 @@ class Content extends Component {
                             : this.onClickNext
                     }
                 >
-                    Next<i class="caret right icon"></i>
+                    Next<i className="caret right icon"></i>
                 </button>
             </div>,
         ];
