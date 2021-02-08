@@ -9,14 +9,14 @@ const oauthData = {
     response_type: "code",
     state: "axbycz",
     redirect_uri: "http://localhost:3000/",
-    CLIENT_ID: "e5be626218040c638a6b2e47eb053caf",
-    CLIENT_SECRET: "637a76c6da7edd0f4504ad649495233a",
+    CLIENT_ID: "",
+    CLIENT_SECRET: "",
 };
 
 let sessionData = {
     authorized: false,
     grant_type: grantTypes[1],
-    ACCESS_TOKEN: "633e47a28c998c896940473dc7e1e5ed64a723ce",
+    ACCESS_TOKEN: "",
     REFRESH_TOKEN: "",
 };
 
